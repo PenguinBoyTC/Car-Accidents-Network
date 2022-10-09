@@ -5,10 +5,10 @@ import json
 
 FEATURES = ['ID', 'Severity', 'Zipcode', 'Sunrise_Sunset', 'Temperature(F)', 'Humidity(%)', 'Pressure(in)',
             'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)', 'Weather_Condition']
-THRESHOLD = 7
+THRESHOLD = 8
 FILE_NAME = 'US_Accidents_Dec21_updated.csv'
 VALID_DATA = 'f10000_valid_data.csv'
-EDGE_DICT = 'edge_dict.json'
+EDGE_DICT = f'edge_dict_{THRESHOLD}.json'
 
 
 def extract_data(filename, output_file):
@@ -30,8 +30,9 @@ def create_graph(edges_df):
     }
     G = nx.from_pandas_edgelist(edges_df, edge_attr=None)
     undirect_G = G.to_undirected()
-    nx.draw(undirect_G, **options)
-    plt.show()
+    nx.write_gml(undirect_G, f'threshold_{THRESHOLD}.gml')
+    # nx.draw(undirect_G, **options)
+    # plt.show()
 
 
 def convert_df_to_edge_dict(df, output_file):
@@ -66,16 +67,16 @@ def convert_df_to_edge_dict(df, output_file):
             if count >= THRESHOLD:
                 edge_dict['source'].append(index_i)
                 edge_dict['target'].append(index_j)
-    with open(f'{output_file}_{THRESHOLD}', 'w') as outfile:
+    with open(f'{output_file}_{THRESHOLD}.json', 'w') as outfile:
         json.dump(edge_dict, outfile)
 
 
-acc_df = read_data(VALID_DATA)
-convert_df_to_edge_dict(acc_df, EDGE_DICT)
-# with open(EDGE_DICT) as json_file:
-#     edge_dict = json.load(json_file)
-#     edges_df = pd.DataFrame(edge_dict)
-#     create_graph(edges_df)
+# acc_df = read_data(VALID_DATA)
+# convert_df_to_edge_dict(acc_df, EDGE_DICT)
+with open(EDGE_DICT) as json_file:
+    edge_dict = json.load(json_file)
+    edges_df = pd.DataFrame(edge_dict)
+    create_graph(edges_df)
 
 
 # edges_df = pd.DataFrame(
