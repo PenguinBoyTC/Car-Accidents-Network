@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 import numpy as np
+from collections import Counter
 
 FEATURES = ['ID', 'Severity', 'Zipcode', 'Sunrise_Sunset', 'Temperature(F)', 'Humidity(%)', 'Pressure(in)',
             'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)', 'Weather_Condition']
-THRESHOLD = 7
+THRESHOLD = 8
 FILE_NAME = 'US_Accidents_Dec21_updated.csv'
 VALID_DATA = 'f10000_valid_data.csv'
 EDGE_DICT = f'edge_dict_{THRESHOLD}.json'
@@ -94,18 +95,25 @@ def read_graph_from_GML(filename):
 undirect_G = read_graph_from_GML(f'threshold_{THRESHOLD}.gml')
 
 sum = 0
+print(nx.info(undirect_G))
 for node, degree in nx.degree(undirect_G):
     sum += degree
 average_degree = sum / undirect_G.number_of_nodes()
-# average_path_length = nx.average_shortest_path_length(undirect_G)
-# diameter = nx.diameter(undirect_G)
-average_clustering = nx.average_clustering(undirect_G)
-global_clustering = nx.transitivity(undirect_G)
 print("average degree: ", average_degree)
-# print("average path length: ", average_path_length)
-# print("diameter: ", diameter)
+average_clustering = nx.average_clustering(undirect_G)
 print("average clustering: ", average_clustering)
+global_clustering = nx.transitivity(undirect_G)
 print("global clustering: ", global_clustering)
+connected_components = sorted(
+    nx.connected_components(undirect_G), key=len, reverse=True)
+print("Number of connected components: ", len(connected_components))
+max_size = 0
+largest_component = None
+for component in nx.connected_components(undirect_G):
+    if len(component) > max_size:
+        max_size = len(component)
+        largest_component = component
+print("Size of largest component: ", max_size)
 
 
 def CCDF(nums):
@@ -117,7 +125,7 @@ def CCDF(nums):
     return ccdf
 
 
-def plot_CDDF(g):
+def plot_CDDF(g, log_scale=False):
     degree_dict = nx.degree_histogram(g)
     np_array = np.array(degree_dict)
     ents = []
@@ -127,15 +135,21 @@ def plot_CDDF(g):
         nums.append(count)
     ccdf = CCDF(nums)
     plt.plot(ents, ccdf)
-    plt.xlabel('Degree')
-    plt.ylabel('CCDF')
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.title('CCDF of Degree Distribution')
+
+    if log_scale:
+        plt.title('CCDF of degree distribution (log scale)')
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel('Degree\n(log scale)')
+        plt.ylabel('CCDF\n(log scale)')
+    else:
+        plt.title('CCDF of degree distribution')
+        plt.xlabel('Degree')
+        plt.ylabel('CCDF')
     plt.show()
 
 
-def plot_PDF(g, normalized=True):
+def plot_PDF(g, normalized=True, log_scale=False):
     print("Creating histogram...")
     aux_y = nx.degree_histogram(g)
 
@@ -147,14 +161,106 @@ def plot_PDF(g, normalized=True):
         for i in range(len(aux_y)):
             aux_y[i] = aux_y[i]/n_nodes
 
-        plt.title('\nDistribution Of Node Linkages (log-log scale)')
-        plt.xlabel('Degree\n(log scale)')
-        plt.ylabel('Number of Nodes\n(log scale)')
-        plt.xscale("log")
-        plt.yscale("log")
+        if log_scale:
+            plt.title('\nPDF of Degree Distribution (Normalized) (Log Scale)\n')
+            plt.ylabel('Normalized log-log frequency')
+            plt.xlabel('Degree\n(log scale)')
+            plt.xscale('log')
+            plt.yscale('log')
+        else:
+            plt.title('\nPDF: Degree Distribution (Normalized)\n')
+            plt.ylabel('Normalized frequency')
+            plt.xlabel('Degree')
         plt.plot(aux_x, aux_y, 'o')
         plt.show()
 
 
-plot_PDF(undirect_G)
-plot_CDDF(undirect_G)
+# plot_PDF(undirect_G, log_scale=False)
+# plot_PDF(undirect_G, log_scale=True)
+# plot_CDDF(undirect_G, log_scale=False)
+# plot_CDDF(undirect_G, log_scale=True)
+
+acc_df = read_data(VALID_DATA)
+feature = "Temperature(F)"
+print(acc_df.groupby([feature])[feature].count().nlargest(5))
+# temperature_list = acc_df["Temperature(F)"].values.tolist()
+# plt.hist(temperature_list, bins=150)
+# plt.title(f'Histogram of Temperature(F)')
+# plt.xlabel("Temperature(F)")
+# plt.ylabel('Frequency')
+# plt.show()
+
+# humidity_list = acc_df["Humidity(%)"].values.tolist()
+# plt.hist(humidity_list, bins=100)
+# plt.title(f'Histogram of Humidity(%)')
+# plt.xlabel("Humidity(%)")
+# plt.ylabel('Frequency')
+# plt.show()
+
+# pressure_list = acc_df["Pressure(in)"].values.tolist()
+# plt.hist(pressure_list, bins=150, range=(28.5, 31.0))
+# plt.title(f'Histogram of Pressure(in)')
+# plt.xlabel("Pressure(in)")
+# plt.ylabel('Frequency')
+# plt.show()
+
+visibility_list = acc_df["Visibility(mi)"].values.tolist()
+print(len(visibility_list))
+plt.hist(visibility_list, bins=50, range=(0, 15))
+plt.title(f'Histogram of Visibility(mi)')
+plt.xlabel("Visibility(mi)")
+plt.ylabel('Frequency')
+plt.show()
+
+# visibility_list = acc_df["Visibility(mi)"].values.tolist()
+# visibility_counts = Counter(visibility_list)
+
+
+# wind_speed_list = acc_df["Wind_Speed(mph)"].values.tolist()
+# print(len(wind_speed_list))
+# plt.hist(wind_speed_list, bins=50)
+# plt.title(f'Histogram of Wind_Speed(mph)')
+# plt.xlabel("Wind_Speed(mph)")
+# plt.ylabel('Frequency')
+# plt.show()
+
+# weather_condition_list = acc_df["Weather_Condition"].values.tolist()
+# weather_counts = Counter(weather_condition_list)
+# most_common_weather_type = [x[0] for x in weather_counts.most_common(8)]
+# counts = [x[1] for x in weather_counts.most_common(8)]
+# plt.bar(most_common_weather_type, counts)
+# plt.title(f'Histogram of Weather_Condition')
+# plt.xlabel("Weather_Condition")
+# plt.ylabel('Frequency')
+# plt.show()
+
+# sunrise_sunset_list = acc_df["Sunrise_Sunset"].values.tolist()
+# sunrise_sunset_counts = Counter(sunrise_sunset_list)
+# most_common_sunrise_sunset_type = [x[0]
+#                                    for x in sunrise_sunset_counts.most_common(4)]
+# counts = [x[1] for x in sunrise_sunset_counts.most_common(4)]
+# plt.bar(most_common_sunrise_sunset_type, counts)
+# plt.title(f'Histogram of Sunrise_Sunset')
+# plt.xlabel("Sunrise_Sunset")
+# plt.ylabel('Frequency')
+# plt.show()
+
+# severity_list = acc_df["Severity"].values.tolist()
+# severity_counts = Counter(severity_list)
+# most_common_severity_type = [x[0] for x in severity_counts.most_common(4)]
+# counts = [x[1] for x in severity_counts.most_common(4)]
+# plt.bar(most_common_severity_type, counts)
+# plt.title(f'Histogram of Severity')
+# plt.xlabel("Severity")
+# plt.ylabel('Frequency')
+# plt.show()
+
+# zipcode_list = acc_df["Zipcode"].values.tolist()
+# zipcode_counts = Counter(zipcode_list)
+# most_common_zipcode_type = [x[0] for x in zipcode_counts.most_common(30)]
+# counts = [x[1] for x in zipcode_counts.most_common(30)]
+# plt.bar(most_common_zipcode_type, counts)
+# plt.title(f'Histogram of Zipcode')
+# plt.xlabel("Zipcode")
+# plt.ylabel('Frequency')
+# plt.show()
