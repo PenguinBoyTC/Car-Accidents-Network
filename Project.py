@@ -264,3 +264,19 @@ plt.show()
 # plt.xlabel("Zipcode")
 # plt.ylabel('Frequency')
 # plt.show()
+
+precipitation_list = acc_df["Precipitation(in)"].values.tolist()
+plt.hist(precipitation_list, bins=50, range=(0, 0.4))
+plt.title(f'Histogram of Precipitation(in)')
+plt.xlabel("Precipitation(in)")
+plt.ylabel('Frequency')
+plt.show()
+# precipitation_coutns = Counter(precipitation_list)
+# most_common_precipitation_type = [x[0]
+#                                   for x in precipitation_coutns.most_common(5)]
+# counts = [x[1] for x in precipitation_coutns.most_common(5)]
+# plt.bar(most_common_precipitation_type, counts)
+# plt.title(f'Histogram of Precipitation(in)')
+# plt.xlabel("Precipitation(in)")
+# plt.ylabel('Frequency')
+# plt.show()
