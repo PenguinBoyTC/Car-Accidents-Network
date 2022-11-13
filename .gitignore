@@ -127,5 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-*.csv
+# *.csv
 .DS_Store
+dataset/complete_valid_data.csv
+dataset/US_Accidents_Dec21_updated.csv
