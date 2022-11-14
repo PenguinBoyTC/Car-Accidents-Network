@@ -10,7 +10,7 @@ FEATURES = ['ID', 'Severity', 'Zipcode', 'Sunrise_Sunset', 'Temperature(F)', 'Hu
 THRESHOLD = 8
 FILE_NAME = 'US_Accidents_Dec21_updated.csv'
 VALID_DATA = 'dataset/f10000_valid_data.csv'
-EDGE_DICT = f'dataset/edge_dict_{THRESHOLD}.json'
+EDGE_DICT = f'networks/edge_dict_{THRESHOLD}.json'
 
 
 def extract_data(filename, output_file):
@@ -38,7 +38,7 @@ def create_graph(edges_df):
     G = nx.from_pandas_edgelist(edges_df, edge_attr=None)
     undirect_G = G.to_undirected()
     draw_graph(undirect_G)
-    nx.write_gml(undirect_G, f'dataset/threshold_{THRESHOLD}.gml')
+    nx.write_gml(undirect_G, f'networks/threshold_{THRESHOLD}.gml')
     return undirect_G
 
 
@@ -93,7 +93,7 @@ def CCDF(nums):
     return ccdf
 
 
-def plot_CDDF(g, log_scale=False):
+def plot_CCDF(g, log_scale=False):
     degree_dict = nx.degree_histogram(g)
     np_array = np.array(degree_dict)
     ents = []
@@ -245,7 +245,8 @@ def plot_all_features_histogram(acc_df):
 
 def graph_analysis(undirect_G):
     sum = 0
-    print(nx.info(undirect_G))
+    print(
+        f'Graph with {undirect_G.number_of_nodes()} nodes and {undirect_G.number_of_edges()} edges')
     for node, degree in nx.degree(undirect_G):
         sum += degree
     average_degree = sum / undirect_G.number_of_nodes()
@@ -274,14 +275,19 @@ def start():
         edges_df = pd.DataFrame(edge_dict)
         create_graph(edges_df)
 
-    undirect_G = read_graph_from_GML(f'dataset/threshold_{THRESHOLD}.gml')
-
+    undirect_G = read_graph_from_GML(f'networks/threshold_{THRESHOLD}.gml')
     graph_analysis(undirect_G)
+    undirect_G_7 = read_graph_from_GML(f'networks/threshold_{7}.gml')
+    print("Threshold 7")
+    graph_analysis(undirect_G_7)
+    undirect_G_8 = read_graph_from_GML(f'networks/threshold_{8}.gml')
+    print("Threshold 8")
+    graph_analysis(undirect_G_8)
 
     plot_PDF(undirect_G, log_scale=False)
     plot_PDF(undirect_G, log_scale=True)
-    plot_CDDF(undirect_G, log_scale=False)
-    plot_CDDF(undirect_G, log_scale=True)
+    plot_CCDF(undirect_G, log_scale=False)
+    plot_CCDF(undirect_G, log_scale=True)
     plot_all_features_histogram(acc_df)
 
 
