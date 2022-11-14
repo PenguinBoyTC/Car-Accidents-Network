@@ -8,9 +8,9 @@ from collections import Counter
 FEATURES = ['ID', 'Severity', 'Zipcode', 'Sunrise_Sunset', 'Temperature(F)', 'Humidity(%)', 'Pressure(in)',
             'Visibility(mi)', 'Wind_Speed(mph)', 'Precipitation(in)', 'Weather_Condition']
 THRESHOLD = 8
-FILE_NAME = 'US_Accidents_Dec21_updated.csv'
-VALID_DATA = 'f10000_valid_data.csv'
-EDGE_DICT = f'edge_dict_{THRESHOLD}.json'
+FILE_NAME = 'dataset/US_Accidents_Dec21_updated.csv'
+VALID_DATA = 'networks/f10000_valid_data.csv'
+EDGE_DICT = f'networks/edge_dict_{THRESHOLD}.json'
 
 
 def extract_data(filename, output_file):
@@ -38,7 +38,7 @@ def create_graph(edges_df):
     G = nx.from_pandas_edgelist(edges_df, edge_attr=None)
     undirect_G = G.to_undirected()
     draw_graph(undirect_G)
-    nx.write_gml(undirect_G, f'threshold_{THRESHOLD}.gml')
+    nx.write_gml(undirect_G, f'/dataset/threshold_{THRESHOLD}.gml')
     return undirect_G
 
 
@@ -274,7 +274,7 @@ def start():
         edges_df = pd.DataFrame(edge_dict)
         create_graph(edges_df)
 
-    undirect_G = read_graph_from_GML(f'threshold_{THRESHOLD}.gml')
+    undirect_G = read_graph_from_GML(f'/dataset/threshold_{THRESHOLD}.gml')
 
     graph_analysis(undirect_G)
 
