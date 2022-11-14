@@ -1,5 +1,7 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -57,8 +59,8 @@ def preprocessing():
 
     X = df_sel.drop(target, axis=1)
     Y = df_sel[target]
-
-    return train_test_split(X, Y, test_size=0.33, random_state=42)
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.33, random_state=42)
+    return x_train, x_test, y_train, y_test, X, Y
 
 def decisiontree(x_train, y_train):
     param_grid = {
@@ -96,22 +98,37 @@ def svmclassifier(x_train, y_train):
     return sv_clf
 
 if __name__ == '__main__':
-    x_train, x_test, y_train, y_test = preprocessing()
+    x_train, x_test, y_train, y_test, X, Y = preprocessing()
 
     dt_clf = decisiontree(x_train, y_train)
     dt_acc = accuracy_score(y_test, dt_clf.predict(x_test))
     print(dt_acc)
+    print(dt_clf.predict(input))
 
-    rf_clf = randomforest(x_train, y_train)
-    rf_acc = accuracy_score(y_test, rf_clf.predict(x_test))
-    print(rf_acc)
+    # rf_clf = randomforest(x_train, y_train)
+    # rf_acc = accuracy_score(y_test, rf_clf.predict(x_test))
+    # print(rf_acc)
 
-    lc = logisticregression(x_train, y_train)
-    lc_acc = accuracy_score(y_test, lc.predict(x_test))
-    print(lc_acc)
+    # lc = logisticregression(x_train, y_train)
+    # lc_acc = accuracy_score(y_test, lc.predict(x_test))
+    # print(lc_acc)
 
     # sv_clf = svmclassifier(x_train, y_train)
     # sv_acc = accuracy_score(y_test, sv_clf.predict(x_test))
     # print(sv_acc)
 
+
+
+
+    # clf = rf_clf
+    #
+    # feature_imp = pd.Series(clf.feature_importances_, index=X.columns).sort_values(ascending=False)
+    # k = 10
+    # sns.barplot(x=feature_imp[:10], y=feature_imp.index[:k])
+    # plt.xlabel('Feature Importance Score')
+    # plt.ylabel('Features')
+    # plt.title('Visualizing Importance Features')
+    # plt.legend()
+    # plt.tight_layout()
+    # plt.show()
 
