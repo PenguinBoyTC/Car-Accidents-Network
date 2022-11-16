@@ -12,6 +12,15 @@ FILE_NAME = 'US_Accidents_Dec21_updated.csv'
 VALID_DATA = 'dataset/f10000_valid_data.csv'
 EDGE_DICT = f'networks/edge_dict_{THRESHOLD}.json'
 
+# Load first 10K rows of data
+
+
+def read_data(filename):
+    df = pd.read_csv(filename)
+    return df
+
+# Extract 11 features out of 47 features
+
 
 def extract_data(filename, output_file):
     df = pd.read_csv(filename)
@@ -20,28 +29,7 @@ def extract_data(filename, output_file):
     acc_df.to_csv(output_file)
 
 
-def read_data(filename):
-    df = pd.read_csv(filename)
-    return df
-
-
-def draw_graph(G):
-    options = {
-        'node_size': 1,
-        'with_labels': False
-    }
-    nx.draw(G, **options)
-    plt.show()
-
-
-def create_graph(edges_df):
-    G = nx.from_pandas_edgelist(edges_df, edge_attr=None)
-    undirect_G = G.to_undirected()
-    draw_graph(undirect_G)
-    nx.write_gml(undirect_G, f'networks/threshold_{THRESHOLD}.gml')
-    return undirect_G
-
-
+# Generate edges between any two nodes based on threshold
 def convert_df_to_edge_dict(df, output_file):
     edge_dict = {
         'source': [],
@@ -74,14 +62,60 @@ def convert_df_to_edge_dict(df, output_file):
             if count >= THRESHOLD:
                 edge_dict['source'].append(index_i)
                 edge_dict['target'].append(index_j)
-    with open(f'dataset/{output_file}_{THRESHOLD}.json', 'w') as outfile:
+    with open(f'networks/{output_file}_{THRESHOLD}.json', 'w') as outfile:
         json.dump(edge_dict, outfile)
+
+
+# create graph from edge dict
+
+
+def create_graph(edges_df):
+    G = nx.from_pandas_edgelist(edges_df, edge_attr=None)
+    undirect_G = G.to_undirected()
+    draw_graph(undirect_G)
+    nx.write_gml(undirect_G, f'networks/threshold_{THRESHOLD}.gml')
+    return undirect_G
+
+# draw graph
+
+
+def draw_graph(G):
+    options = {
+        'node_size': 1,
+        'with_labels': False
+    }
+    nx.draw(G, **options)
+    plt.show()
 
 
 def read_graph_from_GML(filename):
     G = nx.read_gml(filename)
     undirect_G = G.to_undirected()
     return undirect_G
+
+
+def graph_analysis(undirect_G):
+    sum = 0
+    print(
+        f'Graph with {undirect_G.number_of_nodes()} nodes and {undirect_G.number_of_edges()} edges')
+    for node, degree in nx.degree(undirect_G):
+        sum += degree
+    average_degree = sum / undirect_G.number_of_nodes()
+    print("average degree: ", average_degree)
+    average_clustering = nx.average_clustering(undirect_G)
+    print("average clustering: ", average_clustering)
+    global_clustering = nx.transitivity(undirect_G)
+    print("global clustering: ", global_clustering)
+    connected_components = sorted(
+        nx.connected_components(undirect_G), key=len, reverse=True)
+    print("Number of connected components: ", len(connected_components))
+    max_size = 0
+    # largest_component = None
+    for component in nx.connected_components(undirect_G):
+        if len(component) > max_size:
+            max_size = len(component)
+            # largest_component = component
+    print("Size of largest component: ", max_size)
 
 
 def CCDF(nums):
@@ -243,37 +277,15 @@ def plot_all_features_histogram(acc_df):
     # plt.show()
 
 
-def graph_analysis(undirect_G):
-    sum = 0
-    print(
-        f'Graph with {undirect_G.number_of_nodes()} nodes and {undirect_G.number_of_edges()} edges')
-    for node, degree in nx.degree(undirect_G):
-        sum += degree
-    average_degree = sum / undirect_G.number_of_nodes()
-    print("average degree: ", average_degree)
-    average_clustering = nx.average_clustering(undirect_G)
-    print("average clustering: ", average_clustering)
-    global_clustering = nx.transitivity(undirect_G)
-    print("global clustering: ", global_clustering)
-    connected_components = sorted(
-        nx.connected_components(undirect_G), key=len, reverse=True)
-    print("Number of connected components: ", len(connected_components))
-    max_size = 0
-    # largest_component = None
-    for component in nx.connected_components(undirect_G):
-        if len(component) > max_size:
-            max_size = len(component)
-            # largest_component = component
-    print("Size of largest component: ", max_size)
-
-
 def start():
+    # Load first 10K rows of data
     acc_df = read_data(VALID_DATA)
+    # Extract 11 features; create edges between any two nodes based on threshold
     convert_df_to_edge_dict(acc_df, EDGE_DICT)
     with open(EDGE_DICT) as json_file:
         edge_dict = json.load(json_file)
         edges_df = pd.DataFrame(edge_dict)
-        create_graph(edges_df)
+        create_graph(edges_df)  # build graph from edge dict
 
     undirect_G = read_graph_from_GML(f'networks/threshold_{THRESHOLD}.gml')
     graph_analysis(undirect_G)
