@@ -50,37 +50,37 @@ def convert_df_to_edge_dict(df, output_file):
     }
     # print(output_file)
 
-    # for index_i, row_i in df.iterrows():
-    #     for index_j in range(index_i + 1, len(df)):
-    #         row_j = df.iloc[index_j]
-    #         count = 0
-    # if row_i['Severity'] == row_j['Severity']:
+    for index_i, row_i in df.iterrows():
+        for index_j in range(index_i + 1, len(df)):
+            row_j = df.iloc[index_j]
+            count = 0
+    if row_i['Severity'] == row_j['Severity']:
+        count += 1
+    if row_i['Zipcode'] == row_j['Zipcode']:
+        count += WEIGHTS['Zipcode'] * 8.0
+    if row_i['Sunrise_Sunset'] == row_j['Sunrise_Sunset']:
+        count += WEIGHTS['Sunrise_Sunset'] * 8.0
+    if abs(row_i['Temperature(F)'] - row_j['Temperature(F)']) <= 1.0:
+        count += WEIGHTS['Temperature(F)'] * 8.0
+    if abs(row_i['Humidity(%)'] - row_j['Humidity(%)']) <= 1.0:
+        count += WEIGHTS['Humidity(%)'] * 8.0
+    if abs(row_i['Pressure(in)'] - row_j['Pressure(in)']) <= 0.1:
+        count += WEIGHTS['Pressure(in)'] * 8.0
+    if row_i['Visibility(mi)'] == row_j['Visibility(mi)']:
+        count += WEIGHTS['Visibility(mi)'] * 8.0
+    if abs(row_i['Wind_Speed(mph)'] - row_j['Wind_Speed(mph)']) <= 1.0:
+        count += WEIGHTS['Wind_Speed(mph)'] * 8.0
+    # if abs(row_i['Precipitation(in)'] - row_j['Precipitation(in)']) <= 0.02:
     #     count += 1
-    # if row_i['Zipcode'] == row_j['Zipcode']:
-    #     count += WEIGHTS['Zipcode'] * 8.0
-    # if row_i['Sunrise_Sunset'] == row_j['Sunrise_Sunset']:
-    #     count += WEIGHTS['Sunrise_Sunset'] * 8.0
-    # if abs(row_i['Temperature(F)'] - row_j['Temperature(F)']) <= 1.0:
-    #     count += WEIGHTS['Temperature(F)'] * 8.0
-    # if abs(row_i['Humidity(%)'] - row_j['Humidity(%)']) <= 1.0:
-    #     count += WEIGHTS['Humidity(%)'] * 8.0
-    # if abs(row_i['Pressure(in)'] - row_j['Pressure(in)']) <= 0.1:
-    #     count += WEIGHTS['Pressure(in)'] * 8.0
-    # if row_i['Visibility(mi)'] == row_j['Visibility(mi)']:
-    #     count += WEIGHTS['Visibility(mi)'] * 8.0
-    # if abs(row_i['Wind_Speed(mph)'] - row_j['Wind_Speed(mph)']) <= 1.0:
-    #     count += WEIGHTS['Wind_Speed(mph)'] * 8.0
-    # # if abs(row_i['Precipitation(in)'] - row_j['Precipitation(in)']) <= 0.02:
-    # #     count += 1
-    # if row_i['Weather_Condition'] == row_j['Weather_Condition']:
-    #     count += WEIGHTS['Weather_Condition'] * 8.0
-    # if count >= THRESHOLD:
-    #     edge_dict['source'].append(index_i)
-    #     edge_dict['target'].append(index_j)
-    #     edge_dict['weight'].append(count / 9)
+    if row_i['Weather_Condition'] == row_j['Weather_Condition']:
+        count += WEIGHTS['Weather_Condition'] * 8.0
+    if count >= THRESHOLD:
+        edge_dict['source'].append(index_i)
+        edge_dict['target'].append(index_j)
+        edge_dict['weight'].append(count / 9)
     with open(f'{output_file}.json', 'w') as outfile:
         # pdb.set_trace()
-        json.dump(edge_dict, f'{output_file}.json')
+        json.dump(edge_dict, outfile)
 
 
 # create graph from edge dict
@@ -299,25 +299,25 @@ def start():
     acc_df = read_data(VALID_DATA)
     # Extract 11 features; create edges between any two nodes based on threshold
     convert_df_to_edge_dict(acc_df, EDGE_DICT_WEIGHT)
-    with open(EDGE_DICT_WEIGHT) as json_file:
-        edge_dict = json.load(json_file)
-        edges_df = pd.DataFrame(edge_dict)
-        create_graph(edges_df)  # build graph from edge dict
+    # with open(EDGE_DICT_WEIGHT) as json_file:
+    #     edge_dict = json.load(json_file)
+    #     edges_df = pd.DataFrame(edge_dict)
+    #     create_graph(edges_df)  # build graph from edge dict
 
-    undirect_G = read_graph_from_GML(f'{EDGE_DICT_WEIGHT}.gml')
-    graph_analysis(undirect_G)
-    undirect_G_7 = read_graph_from_GML(f'networks/threshold_{7}.gml')
-    print("Threshold 7")
-    graph_analysis(undirect_G_7)
-    undirect_G_8 = read_graph_from_GML(f'networks/threshold_{8}.gml')
-    print("Threshold 8")
-    graph_analysis(undirect_G_8)
+    # undirect_G = read_graph_from_GML(f'{EDGE_DICT_WEIGHT}.gml')
+    # graph_analysis(undirect_G)
+    # undirect_G_7 = read_graph_from_GML(f'networks/threshold_{7}.gml')
+    # print("Threshold 7")
+    # graph_analysis(undirect_G_7)
+    # undirect_G_8 = read_graph_from_GML(f'networks/threshold_{8}.gml')
+    # print("Threshold 8")
+    # graph_analysis(undirect_G_8)
 
-    plot_PDF(undirect_G, log_scale=False)
-    plot_PDF(undirect_G, log_scale=True)
-    plot_CCDF(undirect_G, log_scale=False)
-    plot_CCDF(undirect_G, log_scale=True)
-    plot_all_features_histogram(acc_df)
+    # plot_PDF(undirect_G, log_scale=False)
+    # plot_PDF(undirect_G, log_scale=True)
+    # plot_CCDF(undirect_G, log_scale=False)
+    # plot_CCDF(undirect_G, log_scale=True)
+    # plot_all_features_histogram(acc_df)
 
 
 if __name__ == "__main__":
