@@ -17,7 +17,7 @@ WEIGHTS = {
     'Wind_Speed(mph)': 0.11845901,
     'Weather_Condition': 0.06897787,
     'Sunrise_Sunset': 0.03605416,
-    'Visibility(mi)':0.03403548
+    'Visibility(mi)': 0.03403548
 }
 THRESHOLD = 7
 FILE_NAME = 'US_Accidents_Dec21_updated.csv'
@@ -50,7 +50,6 @@ def convert_df_to_edge_dict(df, output_file):
     }
     # print(output_file)
 
-
     for index_i, row_i in df.iterrows():
         for index_j in range(index_i + 1, len(df)):
             row_j = df.iloc[index_j]
@@ -79,7 +78,7 @@ def convert_df_to_edge_dict(df, output_file):
                 edge_dict['source'].append(index_i)
                 edge_dict['target'].append(index_j)
                 edge_dict['weight'].append(count / 9)
-    with open(f'networks/{output_file}_{THRESHOLD}.json', 'w') as outfile:
+    with open(output_file, 'w') as outfile:
         pdb.set_trace()
         json.dump(edge_dict, outfile)
 
