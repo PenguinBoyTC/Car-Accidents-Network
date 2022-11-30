@@ -298,11 +298,11 @@ def start():
     # Load first 10K rows of data
     acc_df = read_data(VALID_DATA)
     # Extract 11 features; create edges between any two nodes based on threshold
-    convert_df_to_edge_dict(acc_df, EDGE_DICT_WEIGHT)
-    # with open(EDGE_DICT_WEIGHT) as json_file:
-    #     edge_dict = json.load(json_file)
-    #     edges_df = pd.DataFrame(edge_dict)
-    #     create_graph(edges_df)  # build graph from edge dict
+    # convert_df_to_edge_dict(acc_df, EDGE_DICT_WEIGHT)
+    with open(f'{EDGE_DICT_WEIGHT}.json') as json_file:
+        edge_dict = json.load(json_file)
+        edges_df = pd.DataFrame(edge_dict)
+        create_graph(edges_df)  # build graph from edge dict
 
     # undirect_G = read_graph_from_GML(f'{EDGE_DICT_WEIGHT}.gml')
     # graph_analysis(undirect_G)
