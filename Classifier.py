@@ -81,7 +81,7 @@ def decisiontree(x_train, y_train):
 
 def randomforest(x_train, y_train):
     param_grid = {
-        'n_estimators': [20],
+        'n_estimators': [10, 20],
         'criterion': ['gini', 'entropy'],
         'max_depth': [10, 21],
         'min_samples_leaf': [1, 5, 10, 20, 50, 100]
@@ -156,4 +156,5 @@ if __name__ == '__main__':
         print('Model: {} Accuracy: {}'.format(name_arr[i], acc_arr[i]))
 
     draw_importance_plot(rf_clf)
+    print(rf_clf.feature_importances_)
 
